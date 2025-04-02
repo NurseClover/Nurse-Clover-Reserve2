@@ -1,0 +1,149 @@
+
+:root {
+  --main-bg: #ffe4f0;
+  --card-color: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Gmarket Sans', sans-serif;
+  background: url('https://www.transparenttextures.com/patterns/pink-dust.png');
+  background-color: var(--main-bg);
+  transition: background-color 0.3s ease;
+}
+
+.header {
+  background-color: #fff;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.header img {
+  max-height: 60px;
+  cursor: pointer;
+}
+
+.container {
+  display: flex;
+  min-height: 90vh;
+  flex-direction: row;
+}
+
+.menu {
+  width: 180px;
+  border-right: 2px dashed #aaa;
+  padding: 40px 20px;
+  background-color: #fffafc;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.menu a {
+  display: block;
+  margin: 18px 0;
+  text-decoration: none;
+  color: #444;
+  font-size: 17px;
+  padding: 10px 15px;
+  border-radius: 10px;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.menu a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 100%;
+  background: #ffe4f0;
+  z-index: -1;
+  transition: width 0.4s ease;
+}
+
+.menu a:hover::before {
+  width: 100%;
+}
+
+.content {
+  flex: 1;
+  padding: 60px 40px;
+  text-align: center;
+  background-color: var(--main-bg);
+}
+
+.title {
+  font-size: 34px;
+  letter-spacing: 14px;
+  padding: 12px 20px;
+  border-radius: 15px;
+  background-color: var(--card-color);
+  color: #7b2cbf;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  margin-bottom: 30px;
+}
+
+.desc {
+  font-size: 18px;
+  color: #333;
+  margin-top: 30px;
+  line-height: 1.8;
+}
+
+.theme-selector {
+  font-size: 16px;
+  margin-top: 40px;
+}
+
+select {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  .menu {
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px dashed #aaa;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  .menu a {
+    margin: 10px;
+    flex: 1 1 auto;
+    text-align: center;
+  }
+  .content {
+    padding: 30px 20px;
+  }
+}
+
+body.dark-mode {
+  background-color: #121212;
+  color: #eee;
+}
+body.dark-mode .menu {
+  background-color: #1e1e1e;
+}
+body.dark-mode .menu a {
+  color: #ddd;
+}
+body.dark-mode .content {
+  background-color: #121212;
+}
+body.dark-mode .title {
+  background-color: #333;
+  color: #ffaaff;
+}
+body.dark-mode .desc {
+  color: #ccc;
+}
