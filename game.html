@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  @media (max-width: 600px) {
+    h1, h2, h3 {
+      font-size: 20px !important;
+    }
+    .card {
+      font-size: 14px !important;
+      padding: 16px !important;
+    }
+    .menu a {
+      font-size: 16px !important;
+    }
+    .home-button {
+      font-size: 14px !important;
+      padding: 10px 16px !important;
+    }
+    .grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+<meta charset="utf-8" /><title>게임 선택 - 널스클로버</title>
+<style>:root { --main-bg: #fceeee; --card-color: #d0f0ff; }
+body { font-family: 'Malgun Gothic', sans-serif; background-color: var(--main-bg); margin: 0; padding: 0; text-align: center; }
+h1 { padding: 30px 0 10px; } .desc { margin-bottom: 30px; font-size: 18px; color: #333; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; padding: 20px 40px 60px; max-width: 1000px; margin: auto; }
+.card { background-color: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, background-color 0.3s ease; }
+.card:hover { transform: scale(1.05); background-color: #fff8f8; }
+.card h3 { margin-top: 10px; font-size: 20px; } .card a { text-decoration: none; color: #222; }
+.card img { border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.home-button { display: inline-block; padding: 10px 20px; background-color: #ffd3e0; color: #333; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 20px; }
+.home-button:hover { background-color: #ff99bb; }
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+</style></head>
+<body>
+<a href="index.html" class="home-button">🏠 홈으로 가기</a>
+<h1>🎮 게임 선택</h1>
+<p class="desc">원하는 게임을 선택하세요!</p>
+<div class="grid">
+    <div class="card"><a href="영어_한글_짝맞추기_게임.html"><img alt="카드게임" src="https://cdn-icons-png.flaticon.com/512/2894/2894781.png" width="180" height="100" /><h3>🃏 카드 게임</h3></a></div>
+    <div class="card"><a href="GAME_2.html"><img alt="타자게임" src="https://cdn-icons-png.flaticon.com/512/3209/3209336.png" width="180" height="100" /><h3>⌨️ 타자 연습</h3></a></div>
+</div>
+</body></html>
