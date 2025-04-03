@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+ <head>
+  <meta charset="utf-8"/>
+  <title>
+   영어-한글 짝맞추기 게임
+  </title>
+  <style>
+   body { font-family: sans-serif; text-align: center; padding: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      max-width: 800px;
+      margin: 20px auto;
+      gap: 10px;
+    }
+    .card {
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background 0.3s;
+      user-select: none;
+    }
+    .card.revealed { background: #d1eaff; }
+    .card.matched { background: #b0f0b0; cursor: default; }
+  </style>
+ </head>
+ <body>
+  <h1>
+   📘 영어-한글 짝맞추기 게임
+  </h1>
+  <p>
+   ⏱️
+   <span id="timer">
+    0
+   </span>
+   초 | 점수:
+   <span id="score">
+    0
+   </span>
+  </p>
+  <label for="chapterSelect">
+   챕터 선택:
+  </label>
+  <select id="chapterSelect">
+   <option value="진료부서">
+    진료부서
+   </option>
+   <option value="간호기록">
+    간호기록
+   </option>
+   <option value="기본용어">
+    기본용어
+   </option>
+  </select>
+  <button onclick="startGame()">
+   게임 시작
+  </button>
+  <div class="grid" id="game">
+  </div>
+  <p id="status" style="color: green; font-weight: bold;">
+  </p>
+  <script>
+   const allData = {"진료부서": [["OPD (outpatient department)", "외래"], ["IPD (inpatient department)", "입원"], ["MED / IM (internal medicine)", "내과"]], "간호기록": [["before / ante", "이전"], ["after / post", "이후"], ["blood pressure", "혈압"]], "기본용어": [["patient", "환자"], ["hospital", "병원"], ["treatment", "치료"]]};
+let cards = [], firstCard = null, secondCard = null;
+let matchedCount = 0, canClick = false, score = 0, timer = 0, timerInterval = null;
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function resetGameUI() {
+  document.getElementById("score").innerText = "0";
+  document.getElementById("timer").innerText = "0";
+  document.getElementById("status").innerText = "";
+  const gameBoard = document.getElementById("game");
+  if (gameBoard) gameBoard.innerHTML = "";
+}
+
+function startGame() {
+  clearInterval(timerInterval);
+  resetGameUI();
+  const chapter = document.getElementById("chapterSelect").value;
+  const pairs = allData[chapter];
+  if (!pairs || pairs.length < 1) {
+    document.getElementById("status").innerText = "❗ 단어가 없습니다.";
+    return;
+  }
+  matchedCount = 0; score = 0; timer = 0;
+  firstCard = null; secondCard = null; canClick = false;
+
+  cards = [];
+  pairs.forEach(([eng, kor]) => {
+    cards.push({ type: "ENG", value: eng, matched: false });
+    cards.push({ type: "KOR", value: kor, matched: false });
+  });
+  shuffle(cards);
+
+  const gameBoard = document.getElementById("game");
+  cards.forEach((card, index) => {
+    const div = document.createElement("div");
+    div.classList.add("card", "revealed");
+    div.dataset.index = index;
+    div.innerText = card.value;
+    div.onclick = () => flipCard(index);
+    gameBoard.appendChild(div);
+  });
+
+  setTimeout(() => {
+    document.querySelectorAll(".card").forEach(cardEl => {
+      if (!cardEl.classList.contains("matched")) {
+        cardEl.classList.remove("revealed");
+        cardEl.innerText = "?";
+      }
+    });
+    canClick = true;
+  }, 2000);
+
+  timerInterval = setInterval(() => {
+    timer++;
+    document.getElementById("timer").innerText = timer;
+  }, 1000);
+}
+
+function flipCard(index) {
+  if (!canClick) return;
+  const cardEl = document.querySelectorAll(".card")[index];
+  const card = cards[index];
+  if (!card || card.matched || cardEl.classList.contains("revealed")) return;
+
+  cardEl.classList.add("revealed");
+  cardEl.innerText = card.value;
+
+  if (!firstCard) {
+    firstCard = { index, card };
+  } else {
+    secondCard = { index, card };
+    canClick = false;
+
+    if (isMatch(firstCard.card, secondCard.card)) {
+      setTimeout(() => {
+        cardEl.classList.add("matched");
+        document.querySelectorAll(".card")[firstCard.index].classList.add("matched");
+        cards[firstCard.index].matched = true;
+        cards[secondCard.index].matched = true;
+        matchedCount++; score += 10;
+        document.getElementById("score").innerText = score;
+
+        if (matchedCount === cards.length / 2) {
+          clearInterval(timerInterval);
+          document.getElementById("status").innerText = `🎉 성공! 점수: ${score}, 시간: ${timer}초`;
+        }
+        resetFlip();
+      }, 400);
+    } else {
+      setTimeout(() => {
+        cardEl.classList.remove("revealed");
+        cardEl.innerText = "?";
+        const firstEl = document.querySelectorAll(".card")[firstCard.index];
+        firstEl.classList.remove("revealed");
+        firstEl.innerText = "?";
+        resetFlip();
+      }, 800);
+    }
+  }
+}
+
+function resetFlip() {
+  firstCard = null;
+  secondCard = null;
+  canClick = true;
+}
+
+function isMatch(card1, card2) {
+  const chapter = document.getElementById("chapterSelect").value;
+  const pairs = allData[chapter] || [];
+  return pairs.some(([eng, kor]) =>
+    (card1.type === "ENG" && card2.type === "KOR" && card1.value === eng && card2.value === kor) ||
+    (card2.type === "ENG" && card1.type === "KOR" && card2.value === eng && card1.value === kor)
+  );
+}
+  </script>
+  <style>
+   :root {
+    --main-bg: #fceeee;
+    --card-color: #d0f0ff;
+  }
+  body {
+    background-color: var(--main-bg);
+  }
+  .settings {
+    margin-top: 20px;
+    text-align: center;
+  }
+  </style>
+  <div class="settings">
+   <label for="themeSelect">
+    배경 테마 선택:
+   </label>
+   <select id="themeSelect" onchange="applyThemeToAll()">
+    <option value="pink">
+     핑크
+    </option>
+    <option value="sky">
+     하늘
+    </option>
+   </select>
+  </div>
+  <script>
+   function applyThemeToAll() {
+  const theme = document.getElementById("themeSelect").value;
+  localStorage.setItem("theme", theme);
+  const root = document.documentElement;
+  if (theme === "sky") {
+    root.style.setProperty('--main-bg', '#d0f0ff');
+    root.style.setProperty('--card-color', 'white');
+  } else {
+    root.style.setProperty('--main-bg', '#ffe4f0');
+    root.style.setProperty('--card-color', '#d0f0ff');
+  }
+}
+window.onload = () => {
+  const saved = localStorage.getItem("theme") || "pink";
+  document.getElementById("themeSelect").value = saved;
+  applyThemeToAll();
+}
+  </script>
+ </body>
+</html>
