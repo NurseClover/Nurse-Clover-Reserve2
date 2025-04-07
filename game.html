@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+ <head>
+  <meta charset="utf-8"/>
+  <title>
+   게임 선택 - 널스클로버
+  </title>
+  <style>
+   body {
+      font-family: 'Malgun Gothic', sans-serif;
+      background-color: #fceeee;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h1 {
+      padding: 30px 0 10px;
+    }
+    .desc {
+      margin-bottom: 30px;
+      font-size: 18px;
+      color: #333;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 30px;
+      padding: 20px 40px 60px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .card {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.03);
+      background-color: #fff9f9;
+    }
+    .card h3 {
+      margin-top: 10px;
+      font-size: 20px;
+    }
+    .card a {
+      text-decoration: none;
+      color: #222;
+    }
+  .home-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #ffd3e0;
+    color: #333;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+  .home-button:hover {
+    background-color: #ff99bb;
+  }
+  </style>
+ </head>
+ <body>
+  <a href="index.html" class="home-button">🏠 홈으로 가기</a>
+  <h1>
+   🎮 게임 선택
+  </h1>
+  <p class="desc">
+   원하는 게임을 선택하세요!
+  </p>
+  <div class="grid">
+   <div class="card">
+    <a href="영어_한글_짝맞추기_게임.html">
+     <img alt="카드게임" src="https://via.placeholder.com/180x100?text=짝+맞추기"/>
+     <h3>
+      🃏 카드 게임
+     </h3>
+    </a>
+   </div>
+   <div class="card">
+    <a href="GAME_2.html">
+     <img alt="타자게임" src="https://via.placeholder.com/180x100?text=타자+연습"/>
+     <h3>
+      ⌨️ 타자 연습
+     </h3>
+    </a>
+   </div>
+   <div class="card">
+    <a href="quiz_game.html">
+     <img alt="퀴즈게임" src="https://via.placeholder.com/180x100?text=퀴즈+게임"/>
+     <h3>
+      ❓ 영어 퀴즈 도전
+     </h3>
+    </a>
+   </div>
+   <div class="card">
+    <a href="flashcard_game.html">
+     <img alt="플래시카드" src="https://via.placeholder.com/180x100?text=플래시카드"/>
+     <h3>
+      📝 단어 플래시카드
+     </h3>
+    </a>
+   </div>
+  </div>
+  <style>
+   :root {
+    --main-bg: #fceeee;
+    --card-color: #d0f0ff;
+  }
+  body {
+    background-color: var(--main-bg);
+  }
+  .settings {
+    margin-top: 20px;
+    text-align: center;
+  }
+  </style>
+  <div class="settings">
+   <label for="themeSelect">
+    배경 테마 선택:
+   </label>
+   <select id="themeSelect" onchange="applyThemeToAll()">
+    <option value="pink">
+     핑크
+    </option>
+    <option value="sky">
+     하늘
+    </option>
+   </select>
+  </div>
+  <script>
+   function applyThemeToAll() {
+  const theme = document.getElementById("themeSelect").value;
+  localStorage.setItem("theme", theme);
+  const root = document.documentElement;
+  if (theme === "sky") {
+    root.style.setProperty('--main-bg', '#d0f0ff');
+    root.style.setProperty('--card-color', 'white');
+  } else {
+    root.style.setProperty('--main-bg', '#ffe4f0');
+    root.style.setProperty('--card-color', '#d0f0ff');
+  }
+}
+window.onload = () => {
+  const saved = localStorage.getItem("theme") || "pink";
+  document.getElementById("themeSelect").value = saved;
+  applyThemeToAll();
+}
+  </script>
+ </body>
+</html>
