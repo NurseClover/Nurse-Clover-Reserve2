@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>🃏 영어-한글 짝맞추기 게임</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Gmarket+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-bg: #ffe4f0;
+    }
+    body {
+      margin: 0;
+      font-family: 'Gmarket Sans', sans-serif;
+      background: var(--main-bg);
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #7b2cbf;
+    }
+    #gameBoard {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s;
+      user-select: none;
+    }
+    .card.revealed {
+      background-color: #f0f0ff;
+    }
+    .stats {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    .end-message {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🃏 영어-한글 짝맞추기 게임</h1>
+  <div class="stats">
+    ⏱️ 남은 시간: <span id="timer">180</span>초 |
+    점수: <span id="score">0</span> |
+    시도: <span id="attempts">0</span>
+  </div>
+  <div id="gameBoard"></div>
+  <div id="message" class="end-message"></div>
+
+<script>
+  const theme = localStorage.getItem("theme") || "pink";
+  document.documentElement.style.setProperty('--main-bg', theme === "sky" ? "#d0f0ff" : "#ffe4f0");
+
+  const bgm = localStorage.getItem("bgm");
+  if (bgm && bgm !== "none") {
+    const audio = new Audio(bgm);
+    audio.autoplay = true;
+    audio.loop = true;
+    audio.volume = 0.5;
+    document.body.appendChild(audio);
+  }
+
+  const chapter = localStorage.getItem("chapter") || "전체";
+
+  let cards = [], firstCard = null, secondCard = null;
+  let score = 0, attempts = 0, matchedPairs = 0, totalPairs = 6;
+  let timer = 180, countdown;
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  function createCard(text, id) {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerText = "?";
+    div.dataset.text = text;
+    div.dataset.id = id;
+    div.onclick = () => {
+      if (div.classList.contains("revealed") || secondCard) return;
+
+      div.innerText = div.dataset.text;
+      div.classList.add("revealed");
+
+      if (!firstCard) {
+        firstCard = div;
+      } else {
+        secondCard = div;
+        attempts++;
+        document.getElementById("attempts").innerText = attempts;
+        if (firstCard.dataset.id === secondCard.dataset.id && firstCard !== secondCard) {
+          score += 10;
+          document.getElementById("score").innerText = score;
+          matchedPairs++;
+          firstCard = secondCard = null;
+          if (matchedPairs === totalPairs) endGame("🎉 모든 짝을 맞췄어요!");
+        } else {
+          setTimeout(() => {
+            firstCard.innerText = "?";
+            secondCard.innerText = "?";
+            firstCard.classList.remove("revealed");
+            secondCard.classList.remove("revealed");
+            firstCard = secondCard = null;
+          }, 800);
+        }
+      }
+    };
+    return div;
+  }
+
+  function setupBoard(pairs) {
+    const board = document.getElementById("gameBoard");
+    board.innerHTML = "";
+    let gameCards = [];
+
+    pairs.forEach((pair, index) => {
+      gameCards.push(createCard(pair.word, index));
+      gameCards.push(createCard(pair.meaning, index));
+    });
+
+    shuffle(gameCards);
+    gameCards.forEach(card => board.appendChild(card));
+  }
+
+  function endGame(message) {
+    clearInterval(countdown);
+    document.getElementById("message").innerText = message + ` (점수: ${score}, 시도: ${attempts})`;
+  }
+
+  fetch("medical_terms_with_chapter.json")
+    .then(res => res.json())
+    .then(data => {
+      const filtered = data.filter(d => chapter === "전체" || d.chapter === chapter);
+      shuffle(filtered);
+      const pairs = filtered.slice(0, totalPairs);
+      setupBoard(pairs);
+
+      countdown = setInterval(() => {
+        timer--;
+        document.getElementById("timer").innerText = timer;
+        if (timer <= 0) endGame("⏱️ 시간이 초과됐어요!");
+      }, 1000);
+    });
+</script>
+</body>
+</html>

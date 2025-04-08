@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>🌸 널스클로버 타자 연습</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://https://fonts.googleapis.com/css2?family=Gmarket+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-bg: #ffe4f0;
+    }
+    body {
+      margin: 0;
+      font-family: 'Gmarket Sans', sans-serif;
+      background: var(--main-bg);
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #7b2cbf;
+    }
+    #gameArea {
+      position: relative;
+      height: 300px;
+      margin: 20px auto;
+      border: 2px dashed #ccc;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 600px;
+    }
+    .word {
+      position: absolute;
+      font-size: 20px;
+      padding: 5px 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      from { top: 0; }
+      to { top: 100%; }
+    }
+    input {
+      padding: 15px;
+      font-size: 18px;
+      width: 300px;
+      border-radius: 10px;
+      border: 1px solid #aaa;
+      margin-top: 20px;
+    }
+    .info {
+      margin: 15px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌸 널스클로버 타자 연습</h1>
+  <div class="info">
+    점수: <span id="score">0</span> |
+    ❤️ <span id="life">5</span> |
+    ⏱️ <span id="timer">60</span>초
+  </div>
+  <div id="gameArea"></div>
+  <input id="inputBox" placeholder="정답 입력" autofocus />
+  <br><br>
+  <button onclick="startGame()">🎮 게임 시작</button>
+  <div id="status"></div>
+
+<script>
+  const theme = localStorage.getItem("theme") || "pink";
+  document.documentElement.style.setProperty('--main-bg', theme === "sky" ? "#d0f0ff" : "#ffe4f0");
+
+  const bgm = localStorage.getItem("bgm");
+  if (bgm && bgm !== "none") {
+    const audio = new Audio(bgm);
+    audio.autoplay = true;
+    audio.loop = true;
+    audio.volume = 0.5;
+    document.body.appendChild(audio);
+  }
+
+  const chapter = localStorage.getItem("chapter") || "전체";
+  let words = [], active = [], score = 0, life = 5, timer = 60, gameTimer, spawnTimer;
+
+  function startGame() {
+    if (words.length === 0) {
+      alert("단어를 불러오는 중입니다.");
+      return;
+    }
+    score = 0; life = 5; timer = 60;
+    document.getElementById("score").innerText = score;
+    document.getElementById("life").innerText = life;
+    document.getElementById("timer").innerText = timer;
+    document.getElementById("status").innerText = "";
+    document.getElementById("inputBox").value = "";
+    document.getElementById("inputBox").disabled = false;
+
+    gameTimer = setInterval(() => {
+      timer--;
+      document.getElementById("timer").innerText = timer;
+      if (timer <= 0 || life <= 0) endGame();
+    }, 1000);
+
+    spawnTimer = setInterval(spawnWord, 2000);
+  }
+
+  function spawnWord() {
+    const area = document.getElementById("gameArea");
+    const pair = words[Math.floor(Math.random() * words.length)];
+    const showKor = Math.random() < 0.5;
+    const text = showKor ? pair.meaning : pair.word;
+    const answer = showKor ? pair.word : pair.meaning;
+
+    const wordEl = document.createElement("div");
+    wordEl.className = "word";
+    wordEl.innerText = text;
+    wordEl.dataset.answer = answer;
+    wordEl.style.left = Math.random() * 80 + "%";
+    wordEl.style.animationDuration = "5s";
+    area.appendChild(wordEl);
+    active.push(wordEl);
+
+    setTimeout(() => {
+      if (active.includes(wordEl)) {
+        area.removeChild(wordEl);
+        active = active.filter(w => w !== wordEl);
+        life--;
+        document.getElementById("life").innerText = life;
+        if (life <= 0) endGame();
+      }
+    }, 5000);
+  }
+
+  function endGame() {
+    clearInterval(gameTimer);
+    clearInterval(spawnTimer);
+    document.getElementById("status").innerText = `게임 종료! 총 점수: ${score}`;
+    document.getElementById("inputBox").disabled = true;
+  }
+
+  document.getElementById("inputBox").addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      const val = e.target.value.trim().toLowerCase();
+      for (let i = 0; i < active.length; i++) {
+        if (val === active[i].dataset.answer.toLowerCase()) {
+          active[i].remove();
+          active.splice(i, 1);
+          score += 10;
+          document.getElementById("score").innerText = score;
+          e.target.value = "";
+          return;
+        }
+      }
+      timer = Math.max(0, timer - 5);
+      document.getElementById("timer").innerText = timer;
+      document.getElementById("status").innerText = "❌ 오답! -5초";
+      e.target.value = "";
+    }
+  });
+
+  // 단어 불러오기
+  fetch("medical_terms_with_chapter.json")
+    .then(res => res.json())
+    .then(data => {
+      words = data.filter(d => chapter === "전체" || d.chapter === chapter);
+    });
+</script>
+</body>
+</html>
