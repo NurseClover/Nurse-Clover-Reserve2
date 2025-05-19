@@ -1,1 +1,82 @@
-<!-- flashcard.html placeholder for flashcard game -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>영어-한글 짝맞추기 게임</title>
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <h1>영어-한글 짝맞추기</h1>
+  <label for="chapterSelect">챕터 선택:</label>
+  <select id="chapterSelect"></select>
+  <button id="startGame">게임 시작</button>
+  <div id="gameBoard" class="board"></div>
+
+  <script type="module">
+    import { getChapters, getTermsByChapter } from './terms.js';
+
+    const chapterSelect = document.getElementById('chapterSelect');
+    const startBtn = document.getElementById('startGame');
+    const gameBoard = document.getElementById('gameBoard');
+    let firstCard = null;
+
+    async function initChapters() {
+      const chapters = await getChapters();
+      chapterSelect.innerHTML = chapters
+        .map(ch => `<option value="${ch}">${ch}</option>`)
+        .join('');
+    }
+
+    function shuffle(arr) {
+      return arr
+        .map(v => [Math.random(), v])
+        .sort((a, b) => a[0] - b[0])
+        .map(v => v[1]);
+    }
+
+    startBtn.addEventListener('click', async () => {
+      const chapter = chapterSelect.value;
+      let terms = await getTermsByChapter(chapter);
+      terms = shuffle(terms);
+      const cards = shuffle([
+        ...terms.map(t => ({ text: t.word, kind: 'word' })),
+        ...terms.map(t => ({ text: t.meaning, kind: 'meaning' }))
+      ]);
+      renderBoard(cards);
+    });
+
+    function renderBoard(cards) {
+      gameBoard.innerHTML = cards
+        .map(c => `
+          <div class="card" data-kind="${c.kind}" data-text="${c.text}" onclick="onCardClick(this)">
+            <div class="front"></div>
+            <div class="back">${c.text}</div>
+          </div>
+        `)
+        .join('');
+    }
+
+    window.onCardClick = (card) => {
+      card.classList.add('flipped');
+      if (!firstCard) {
+        firstCard = card;
+      } else {
+        const a = firstCard.dataset;
+        const b = card.dataset;
+        const isMatch = a.text === b.text && a.kind !== b.kind;
+        if (!isMatch) {
+          setTimeout(() => {
+            firstCard.classList.remove('flipped');
+            card.classList.remove('flipped');
+            firstCard = null;
+          }, 800);
+        } else {
+          firstCard = null;
+        }
+      }
+    };
+
+    initChapters();
+  </script>
+</body>
+</html>
