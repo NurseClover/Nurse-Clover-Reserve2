@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📖 챕터별 의학용어 학습</title>
+  <title>학습자료 & 게임 연동</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: sans-serif; padding: 1rem; }
@@ -13,6 +13,7 @@
     .flipped { background: #c0e4ff; }
     .hidden { display: none; }
     label { margin-right: 0.5rem; }
+    input, button { margin: 0.25rem 0; }
   </style>
 </head>
 <body>
@@ -22,7 +23,11 @@
     <h2>관리자 업로드</h2>
     <input type="password" id="admin-pw" placeholder="관리자 비밀번호" />
     <button id="admin-login">로그인</button>
-    <div id="file-upload-area" class="hidden">
+    <div id="file-controls" class="hidden">
+      <h3>GitHub 파일 가져오기</h3>
+      <input type="text" id="file-url-input" placeholder="Raw GitHub URL (.xlsx, .csv)" />
+      <button id="fetch-url-btn">가져오기</button>
+      <h3>로컬 파일 업로드</h3>
       <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
     </div>
   </section>
@@ -45,7 +50,9 @@
     let chapters = {};
     const adminPwInput = document.getElementById('admin-pw');
     const adminLoginBtn = document.getElementById('admin-login');
-    const fileUploadArea = document.getElementById('file-upload-area');
+    const fileControls = document.getElementById('file-controls');
+    const fileUrlInput = document.getElementById('file-url-input');
+    const fetchUrlBtn = document.getElementById('fetch-url-btn');
     const fileInput = document.getElementById('file-input');
     const chapterSelect = document.getElementById('chapter-select');
     const wordList = document.getElementById('word-list');
@@ -66,27 +73,8 @@
       startBtn.disabled = true;
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const stored = localStorage.getItem('chapters');
-      if (stored) {
-        chapters = JSON.parse(stored);
-        populateChapterSelect();
-      }
-    });
-
-    adminLoginBtn.addEventListener('click', () => {
-      if (adminPwInput.value === ADMIN_PASSWORD) {
-        fileUploadArea.classList.remove('hidden');
-        adminPwInput.value = '';
-      } else {
-        alert('비밀번호가 틀렸습니다.');
-      }
-    });
-
-    fileInput.addEventListener('change', async (e) => {
-      const f = e.target.files[0];
-      const buf = await f.arrayBuffer();
-      const wb = XLSX.read(buf, { type:'array' });
+    async function loadFromArrayBuffer(buffer) {
+      const wb = XLSX.read(buffer, { type: 'array' });
       chapters = {};
       wb.SheetNames.forEach(sheetName => {
         const ws = wb.Sheets[sheetName];
@@ -94,7 +82,56 @@
         chapters[sheetName] = rows.map(r => ({ word: r.Word || r.word, meaning: r.Meaning || r.meaning }));
       });
       localStorage.setItem('chapters', JSON.stringify(chapters));
+      localStorage.setItem('fileSource', 'local');
       populateChapterSelect();
+    }
+
+    async function loadFromUrl(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('파일을 가져오는 데 실패했습니다.');
+        const buffer = await res.arrayBuffer();
+        const wb = XLSX.read(buffer, { type: 'array' });
+        chapters = {};
+        wb.SheetNames.forEach(sheetName => {
+          const ws = wb.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(ws);
+          chapters[sheetName] = rows.map(r => ({ word: r.Word || r.word, meaning: r.Meaning || r.meaning }));
+        });
+        localStorage.setItem('chapters', JSON.stringify(chapters));
+        localStorage.setItem('fileSource', url);
+        populateChapterSelect();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const storedChapters = localStorage.getItem('chapters');
+      if (storedChapters) {
+        chapters = JSON.parse(storedChapters);
+        populateChapterSelect();
+      }
+    });
+
+    adminLoginBtn.addEventListener('click', () => {
+      if (adminPwInput.value === ADMIN_PASSWORD) {
+        fileControls.classList.remove('hidden');
+        adminPwInput.value = '';
+      } else {
+        alert('비밀번호가 틀렸습니다.');
+      }
+    });
+
+    fetchUrlBtn.addEventListener('click', () => {
+      const url = fileUrlInput.value.trim();
+      if (url) loadFromUrl(url);
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      const f = e.target.files[0];
+      const buf = await f.arrayBuffer();
+      await loadFromArrayBuffer(buf);
     });
 
     chapterSelect.addEventListener('change', () => {
