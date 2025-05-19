@@ -2,175 +2,39 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>학습자료 & 게임 연동</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 1rem; }
-    #admin-area, #user-area { margin-bottom: 2rem; }
-    #word-list, #game-area { margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); gap: 0.5rem; }
-    .card { background: #f0f0f0; padding: 0.5rem; text-align: center; border-radius: 4px; cursor: pointer; user-select: none; }
-    .flipped { background: #c0e4ff; }
-    .hidden { display: none; }
-    label { margin-right: 0.5rem; }
-    input, button { margin: 0.25rem 0; }
-  </style>
+  <title>단어 학습</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>학습자료 & 게임 연동</h1>
+  <h1>단어 학습</h1>
+  <label for="chapterSelect">챕터 선택:</label>
+  <select id="chapterSelect"></select>
+  <div id="termList" class="term-list"></div>
 
-  <section id="admin-area">
-    <h2>관리자 업로드</h2>
-    <input type="password" id="admin-pw" placeholder="관리자 비밀번호" />
-    <button id="admin-login">로그인</button>
-    <div id="file-controls" class="hidden">
-      <h3>GitHub 파일 가져오기</h3>
-      <input type="text" id="file-url-input" placeholder="Raw GitHub URL (.xlsx, .csv)" />
-      <button id="fetch-url-btn">가져오기</button>
-      <h3>로컬 파일 업로드</h3>
-      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
-    </div>
-  </section>
+  <script type="module">
+    import { getChapters, getTermsByChapter } from './terms.js';
 
-  <section id="user-area">
-    <h2>학습자 화면</h2>
-    <div>
-      <label for="chapter-select">파트 선택:</label>
-      <select id="chapter-select" disabled>
-        <option value="">-- 파일 업로드 후 선택 --</option>
-      </select>
-    </div>
-    <div id="word-list"></div>
-    <button id="start-game" disabled>게임 시작</button>
-    <div id="game-area"></div>
-  </section>
+    const chapterSelect = document.getElementById('chapterSelect');
+    const termList = document.getElementById('termList');
 
-  <script>
-    const ADMIN_PASSWORD = 'admin123'; // 실제 배포 시 보안 강화 필요
-    let chapters = {};
-    const adminPwInput = document.getElementById('admin-pw');
-    const adminLoginBtn = document.getElementById('admin-login');
-    const fileControls = document.getElementById('file-controls');
-    const fileUrlInput = document.getElementById('file-url-input');
-    const fetchUrlBtn = document.getElementById('fetch-url-btn');
-    const fileInput = document.getElementById('file-input');
-    const chapterSelect = document.getElementById('chapter-select');
-    const wordList = document.getElementById('word-list');
-    const startBtn = document.getElementById('start-game');
-    const gameArea = document.getElementById('game-area');
-
-    function populateChapterSelect() {
-      chapterSelect.innerHTML = '<option value="">--파트 선택--</option>';
-      Object.keys(chapters).forEach(ch => {
-        const opt = document.createElement('option');
-        opt.value = ch;
-        opt.textContent = ch;
-        chapterSelect.appendChild(opt);
-      });
-      chapterSelect.disabled = false;
-      wordList.innerHTML = '';
-      gameArea.innerHTML = '';
-      startBtn.disabled = true;
+    async function init() {
+      const chapters = await getChapters();
+      chapterSelect.innerHTML = chapters
+        .map(ch => `<option value="${ch}">${ch}</option>`)
+        .join('');
+      chapterSelect.addEventListener('change', renderTerms);
+      renderTerms();
     }
 
-    async function loadFromArrayBuffer(buffer) {
-      const wb = XLSX.read(buffer, { type: 'array' });
-      chapters = {};
-      wb.SheetNames.forEach(sheetName => {
-        const ws = wb.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(ws);
-        chapters[sheetName] = rows.map(r => ({ word: r.Word || r.word, meaning: r.Meaning || r.meaning }));
-      });
-      localStorage.setItem('chapters', JSON.stringify(chapters));
-      localStorage.setItem('fileSource', 'local');
-      populateChapterSelect();
+    async function renderTerms() {
+      const chapter = chapterSelect.value;
+      const terms = await getTermsByChapter(chapter);
+      termList.innerHTML = terms
+        .map(t => `<div class="term"><strong>${t.word}</strong>: ${t.meaning}</div>`)
+        .join('');
     }
 
-    async function loadFromUrl(url) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('파일을 가져오는 데 실패했습니다.');
-        const buffer = await res.arrayBuffer();
-        const wb = XLSX.read(buffer, { type: 'array' });
-        chapters = {};
-        wb.SheetNames.forEach(sheetName => {
-          const ws = wb.Sheets[sheetName];
-          const rows = XLSX.utils.sheet_to_json(ws);
-          chapters[sheetName] = rows.map(r => ({ word: r.Word || r.word, meaning: r.Meaning || r.meaning }));
-        });
-        localStorage.setItem('chapters', JSON.stringify(chapters));
-        localStorage.setItem('fileSource', url);
-        populateChapterSelect();
-      } catch (e) {
-        alert(e.message);
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const storedChapters = localStorage.getItem('chapters');
-      if (storedChapters) {
-        chapters = JSON.parse(storedChapters);
-        populateChapterSelect();
-      }
-    });
-
-    adminLoginBtn.addEventListener('click', () => {
-      if (adminPwInput.value === ADMIN_PASSWORD) {
-        fileControls.classList.remove('hidden');
-        adminPwInput.value = '';
-      } else {
-        alert('비밀번호가 틀렸습니다.');
-      }
-    });
-
-    fetchUrlBtn.addEventListener('click', () => {
-      const url = fileUrlInput.value.trim();
-      if (url) loadFromUrl(url);
-    });
-
-    fileInput.addEventListener('change', async (e) => {
-      const f = e.target.files[0];
-      const buf = await f.arrayBuffer();
-      await loadFromArrayBuffer(buf);
-    });
-
-    chapterSelect.addEventListener('change', () => {
-      wordList.innerHTML = '';
-      gameArea.innerHTML = '';
-      startBtn.disabled = true;
-      const sel = chapterSelect.value;
-      if (!sel) return;
-      chapters[sel].forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.textContent = item.word;
-        div.addEventListener('click', () => {
-          if (div.classList.contains('flipped')) return;
-          div.classList.add('flipped');
-          div.textContent = item.meaning;
-        });
-        wordList.appendChild(div);
-      });
-      startBtn.disabled = false;
-    });
-
-    startBtn.addEventListener('click', () => {
-      gameArea.innerHTML = '';
-      const sel = chapterSelect.value;
-      if (!sel) return;
-      const arr = chapters[sel].slice().sort(() => 0.5 - Math.random());
-      arr.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.textContent = item.word;
-        div.addEventListener('click', () => {
-          if (div.classList.contains('flipped')) return;
-          div.classList.add('flipped');
-          div.textContent = item.meaning;
-        });
-        gameArea.appendChild(div);
-      });
-    });
+    init();
   </script>
 </body>
 </html>
