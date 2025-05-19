@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+ <head>
+  <meta charset="utf-8"/>
+  <title>
+   공지사항
+  </title>
+  <style>
+   body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    nav a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #0044cc;
+      font-weight: bold;
+    }
+    .notice-item {
+      margin: 15px auto;
+      width: 80%;
+      text-align: left;
+    }
+    .notice-item button {
+      width: 100%;
+      background: #f0f0f0;
+      border: none;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .notice-item button:hover {
+      background: #e0e0e0;
+    }
+    .detail {
+      padding: 10px;
+      background: #e9f7ff;
+      display: none;
+    }
+  .home-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #ffd3e0;
+    color: #333;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+  .home-button:hover {
+    background-color: #ff99bb;
+  }
+  </style>
+ </head>
+ <body>
+  <a href="index.html" class="home-button">🏠 홈으로 가기</a>
+  <nav>
+   <a href="game.html">
+    🎮 게임
+   </a>
+   <a href="study.html">
+    📖 학습자료
+   </a>
+   <a href="notice.html">
+    📢 공지
+   </a>
+  </nav>
+  <h1>
+   📢 공지사항
+  </h1>
+<div class="notice-item">
+  <button onclick="toggleDetail(this)">
+    <span style="color: black;">✔</span> 4월 28일 – 동아리 실습이 있습니다
+  </button>
+  <div class="detail" style="display:none;">
+    - 시간: 15시 ~ 18시<br>
+    - 1학년: 참관 실습<br>
+    - 2학년: 단순도뇨 및 유치도뇨 실습 예정<br>
+    - 1, 2학년 모두 실습가운과 머리망 착용 필수<br>
+    - 머리망이 없는 1학년은 깔끔한 올림머리(똥머리)로 준비해 주세요.<br>
+    - 사유 없이 3회 이상 미참석자는 동아리 퇴출 사유에 포함됩니다.<br>
+    ‼️ 못 오시는 분들은 사유와 함께 동아리장(2학년)에게 보내주세요 ‼️<br>
+    ※ 추가로 실습을 희망하는 분은 연락 주시면 투표를 진행하겠습니다.<br>
+    자세한 사항은 공지사항을 확인해 주세요!
+  </div>
+</div>
+<div class="notice-item">
+  <button onclick="toggleDetail(this)" style="color: lightgray;">
+    ✔3월 27일 – 널스클로버 회식 및 OT가 진행될 예정입니다
+  </button>
+   <div class="detail" style="display:none; color: lightgray;">
+    7시부터 9시까지 두 시간 진행될 예정으로, OT의 경우 앞으로의 활동 계획과 공지 올릴 방안을 이 사이트를 이용할 계획입니다
+  </div>
+</div>
+  <script>
+   function toggleDetail(btn) {
+      const detail = btn.nextElementSibling;
+      detail.style.display = (detail.style.display === "none" || detail.style.display === "") ? "block" : "none";
+    }
+  </script>
+  <style>
+   :root {
+    --main-bg: #fceeee;
+    --card-color: #d0f0ff;
+  }
+  body {
+    background-color: var(--main-bg);
+  }
+  .settings {
+    margin-top: 20px;
+    text-align: center;
+  }
+  </style>
+  <div class="settings">
+   <label for="themeSelect">
+    배경 테마 선택:
+   </label>
+   <select id="themeSelect" onchange="applyThemeToAll()">
+    <option value="pink">
+     핑크
+    </option>
+    <option value="sky">
+     하늘
+    </option>
+   </select>
+  </div>
+  <script>
+   function applyThemeToAll() {
+  const theme = document.getElementById("themeSelect").value;
+  localStorage.setItem("theme", theme);
+  const root = document.documentElement;
+  if (theme === "sky") {
+    root.style.setProperty('--main-bg', '#d0f0ff');
+    root.style.setProperty('--card-color', 'white');
+  } else {
+    root.style.setProperty('--main-bg', '#ffe4f0');
+    root.style.setProperty('--card-color', '#d0f0ff');
+  }
+}
+window.onload = () => {
+  const saved = localStorage.getItem("theme") || "pink";
+  document.getElementById("themeSelect").value = saved;
+  applyThemeToAll();
+}
+  </script>
+ </body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+ <head>
+  <meta charset="utf-8"/>
+  <title>
+   널스클로버 영어-한글 짝맞추기
+  </title>
+  
+  <style>
+   body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Malgun Gothic', sans-serif;
+      background-color: #fceeee;
+    }
+    .container {
+      display: flex;
+    }
+    .menu {
+      width: 150px;
+      border-right: 2px dashed #555;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+    .menu a {
+      display: block;
+      margin: 20px 0;
+      text-decoration: none;
+      color: #333;
+      font-size: 18px;
+    }
+    .content {
+      flex: 1;
+      padding: 40px;
+      text-align: center;
+    }
+    .title {
+      font-size: 36px;
+      letter-spacing: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .desc {
+      font-size: 18px;
+      color: #333;
+      margin-top: 30px;
+    }
+  </style>
+ </head>
+ <body>
+  <div class="container">
+   <div class="menu">
+    <a href="game.html">
+     🎮 게임
+    </a>
+    <a href="study.html">
+     📖 학습자료
+    </a>
+    <a href="notice.html">
+     📢 공지
+    </a>
+    <a href="#" onclick="toggleSettings()">
+     ⚙️ 환경설정
+    </a>
+   </div>
+   <div class="content">
+    <div class="title">
+     널 / 스 / 클 / 로 / 버
+    </div>
+    <p class="desc">
+     경북전문대학교 25학년도 널스클로버 웹사이트입니다.
+    <p class="desc">
+     1) 월요일(4/28일) 동아리 실습이 있습니다. 자세한 사항은 공지 사항을 확인해 주세요
+     <br/>
+</p>
+    <div class="theme-selector" id="settingsPanel" style="display:none; margin-top: 20px;">
+     <label for="themeSelect">
+      배경 테마 선택:
+     </label>
+     <select id="themeSelect" onchange="applyThemeToAll()">
+      <option value="pink">
+       핑크
+      </option>
+      <option value="sky">
+       하늘
+      </option>
+     </select>
+    </div>
+   </div>
+  </div>
+  <script>
+   function applyThemeToAll() {
+  const theme = document.getElementById("themeSelect").value;
+  localStorage.setItem("theme", theme);
+  const root = document.documentElement;
+  if (theme === "sky") {
+    root.style.setProperty('--main-bg', '#d0f0ff');
+    root.style.setProperty('--card-color', 'white');
+  } else {
+    root.style.setProperty('--main-bg', '#ffe4f0');
+    root.style.setProperty('--card-color', '#d0f0ff');
+  }
+}
+function toggleSettings() {
+  const panel = document.getElementById("settingsPanel");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+}
+window.onload = () => {
+  const saved = localStorage.getItem("theme") || "pink";
+  document.getElementById("themeSelect").value = saved;
+  applyThemeToAll();
+};
+  </script>
+ </body>
+</html>

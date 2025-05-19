@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>🌸 감성 타자 게임</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Gmarket+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-bg: #ffe4f0;
+    }
+    body {
+      margin: 0;
+      font-family: 'Gmarket Sans', sans-serif;
+      background: var(--main-bg);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 700px;
+      text-align: center;
+      position: relative;
+    }
+    h1 {
+      margin-top: 0;
+      color: #7b2cbf;
+    }
+    #gameArea {
+      position: relative;
+      height: 300px;
+      border: 2px dashed #ccc;
+      margin: 20px 0;
+      background: #fffdfd;
+      overflow: hidden;
+      border-radius: 15px;
+    }
+    .word {
+      position: absolute;
+      font-size: 24px;
+      font-weight: bold;
+      animation: drop linear forwards;
+      padding: 6px 12px;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 1px solid #eee;
+    }
+    @keyframes drop {
+      0% { top: 0; }
+      100% { top: 300px; }
+    }
+    input {
+      font-size: 22px;
+      padding: 15px 20px;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+      margin-top: 20px;
+    }
+    .stats {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #ff8ba7;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #ff6f91;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌸 널스클로버 타자 연습</h1>
+  <div class="stats">
+    점수: <span id="score">0</span> |
+    ❤️ <span id="life">5</span> |
+    ⏱️ <span id="timer">60</span>초
+  </div>
+  <div id="gameArea"></div>
+  <input type="text" id="inputBox" placeholder="정답 입력" autofocus />
+  <br>
+  <button class="btn" onclick="startGame()">🎮 게임 시작</button>
+  <div id="status" style="margin-top: 10px; font-weight: bold;"></div>
+
+<script>
+  // ✅ 테마 반영
+  const theme = localStorage.getItem("theme") || "pink";
+  document.documentElement.style.setProperty('--main-bg', theme === "sky" ? "#d0f0ff" : "#ffe4f0");
+
+  // ✅ 배경음 반영
+  const bgm = localStorage.getItem("bgm");
+  if (bgm && bgm !== "none") {
+    const audio = new Audio(bgm);
+    audio.autoplay = true;
+    audio.loop = true;
+    audio.volume = 0.4;
+    document.body.appendChild(audio);
+  }
+
+  // ✅ 챕터 반영
+  const chapter = localStorage.getItem("chapter") || "전체";
+  let activeWords = [], score = 0, life = 5, timer = 60, speed = 5;
+  let gameLoop, spawnLoop;
+
+  function spawnWordFromList(wordList) {
+    const gameArea = document.getElementById("gameArea");
+    const pair = wordList[Math.floor(Math.random() * wordList.length)];
+    const showKor = Math.random() < 0.5;
+    const text = showKor ? pair.meaning : pair.word;
+    const answer = showKor ? pair.word : pair.meaning;
+
+    const wordEl = document.createElement("div");
+    wordEl.className = "word";
+    wordEl.innerText = text;
+    wordEl.dataset.answer = answer;
+    wordEl.style.left = Math.random() * 80 + "%";
+    wordEl.style.animationDuration = speed + "s";
+    gameArea.appendChild(wordEl);
+    activeWords.push(wordEl);
+
+    setTimeout(() => {
+      if (activeWords.includes(wordEl)) {
+        wordEl.remove();
+        activeWords = activeWords.filter(w => w !== wordEl);
+        life--;
+        document.getElementById("life").innerText = life;
+        if (life <= 0) endGame();
+      }
+    }, speed * 1000);
+  }
+
+  function startGameWithWords(wordList) {
+    score = 0; life = 5; timer = 60;
+    document.getElementById("score").innerText = score;
+    document.getElementById("life").innerText = life;
+    document.getElementById("timer").innerText = timer;
+    document.getElementById("inputBox").disabled = false;
+    document.getElementById("inputBox").value = "";
+    document.getElementById("status").innerText = "";
+
+    gameLoop = setInterval(() => {
+      timer--;
+      document.getElementById("timer").innerText = timer;
+      if (timer <= 0 || life <= 0) endGame();
+    }, 1000);
+
+    spawnLoop = setInterval(() => spawnWordFromList(wordList), 2000);
+  }
+
+  function endGame() {
+    clearInterval(gameLoop);
+    clearInterval(spawnLoop);
+    document.getElementById("status").innerText = `💥 게임 종료! 총 점수: ${score}`;
+    document.getElementById("inputBox").disabled = true;
+  }
+
+  document.getElementById("inputBox").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      const val = this.value.trim().toLowerCase();
+      for (let i = 0; i < activeWords.length; i++) {
+        if (val === activeWords[i].dataset.answer.toLowerCase()) {
+          activeWords[i].remove();
+          activeWords.splice(i, 1);
+          score += 10;
+          document.getElementById("score").innerText = score;
+          this.value = "";
+          return;
+        }
+      }
+      timer = Math.max(0, timer - 5);
+      document.getElementById("timer").innerText = timer;
+      document.getElementById("status").innerText = "❌ 오답! -5초";
+      this.value = "";
+    }
+  });
+
+  // ✅ 단어 불러오기 및 필터링
+  let words = [];
+  fetch("medical_terms_with_chapter.json")
+    .then(res => res.json())
+    .then(data => {
+      words = data.filter(entry => chapter === "전체" || entry.chapter === chapter);
+    });
+
+  function startGame() {
+    if (words.length > 0) {
+      startGameWithWords(words);
+    } else {
+      alert("단어를 불러오는 중입니다. 잠시만 기다려주세요.");
+    }
+  }
+</script>
+</body>
+</html>

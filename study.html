@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>📖 챕터별 의학용어 학습</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Gmarket+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-bg: linear-gradient(to right, #ffe4f0, #e0f7fa);
+      --card-bg: #ffffff;
+      --accent: #ff8ba7;
+    }
+    body {
+      margin: 0;
+      font-family: 'Gmarket Sans', sans-serif;
+      background: var(--main-bg);
+      color: #333;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #7b2cbf;
+    }
+    .chapter-title {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 280px;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: scale(1.03);
+    }
+    .card h3 {
+      margin-top: 0;
+      color: #444;
+    }
+    .card p {
+      margin: 8px 0;
+    }
+    @media (max-width: 600px) {
+      .card {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📖 챕터별 의학용어 학습</h1>
+  <div class="chapter-title">현재 선택된 챕터: <span id="chapterName"></span></div>
+  <div class="cards" id="cardContainer"></div>
+
+  <script>
+    const chapter = localStorage.getItem("chapter") || "전체";
+    document.getElementById("chapterName").textContent = chapter;
+
+    fetch("medical_terms_with_chapter.json")
+      .then(res => res.json())
+      .then(data => {
+        const filtered = data.filter(item => item.chapter === chapter || chapter === "전체");
+        const container = document.getElementById("cardContainer");
+        filtered.forEach(entry => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <h3>${entry.word}</h3>
+            <p><strong>뜻:</strong> ${entry.meaning}</p>
+            <p><strong>챕터:</strong> ${entry.chapter}</p>
+          `;
+          container.appendChild(card);
+        });
+      })
+      .catch(err => {
+        document.getElementById("cardContainer").innerHTML = "<p>❌ 단어를 불러올 수 없습니다.</p>";
+        console.error("단어 불러오기 오류:", err);
+      });
+  </script>
+</body>
+</html>
