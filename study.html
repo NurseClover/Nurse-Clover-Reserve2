@@ -74,9 +74,13 @@
     const medicalTerms = [
       { chapter: "호흡기계", word: "Lung : 폐", meaning: "산소와 이산화탄소 교환이 이루어지는 기관." },
       { chapter: "호흡기계", word: "Trachea : 기관", meaning: "후두와 기관지를 연결하는 공기의 통로." },
+      { chapter: "호흡기계", word: "Bronchus : 기관지", meaning: "기관과 폐포를 연결하는 공기의 통로." },
+      { chapter: "호흡기계", word: "Alveolus : 폐포", meaning: "가스 교환이 일어나는 폐 내부 작은 공기 주머니." },
+
       { chapter: "순환기계", word: "Heart : 심장", meaning: "혈액을 전신에 공급하는 펌프 역할의 기관." },
-      { chapter: "순환기계", word: "Aorta : 대동맥", meaning: "심장에서 나온 혈액을 전신으로 보내는 가장 큰 동맥." }
-      // 여기에 계속해서 추가 가능
+      { chapter: "순환기계", word: "Aorta : 대동맥", meaning: "심장에서 나온 혈액을 전신으로 보내는 가장 큰 동맥." },
+      { chapter: "순환기계", word: "Vein : 정맥", meaning: "혈액을 심장으로 되돌려 보내는 혈관." }
+      // 더 추가 가능
     ];
 
     function renderTabs() {
@@ -89,7 +93,7 @@
         btn.onclick = () => selectChapter(chapter, btn);
         tabs.append(btn);
       });
-      tabs.querySelector('button').click();  // 첫 번째 탭 자동 선택
+      tabs.querySelector('button').click();
     }
 
     function selectChapter(chapter, btn) {
