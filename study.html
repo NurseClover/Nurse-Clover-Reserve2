@@ -51,6 +51,86 @@
       window._allTerms = await loadTerms();
       renderTabs(window._allTerms);
     })();
+  <!-- 기존 study.html 파일의 <body> 내부 맨 아래쪽에 추가하세요 -->
+<div class="chapter-container">
+
+    <!-- 예시 챕터 -->
+    <div class="chapter">
+        <h2>호흡기계</h2>
+        <div class="cards">
+            <div class="card">
+                <div class="term">Lung : 폐</div>
+                <div class="meaning">산소와 이산화탄소 교환이 이루어지는 기관.</div>
+            </div>
+            <div class="card">
+                <div class="term">Trachea : 기관</div>
+                <div class="meaning">후두와 기관지를 연결하는 공기의 통로.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 추가 챕터는 이런 방식으로 계속 추가 -->
+</div>
+
+<style>
+/* 기존 style이 있다면 그 아래에 추가 */
+.chapter-container {
+    max-width: 800px;
+    margin: auto;
+}
+
+.chapter {
+    margin-bottom: 25px;
+}
+
+.chapter h2 {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 12px;
+    width: 180px;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+.meaning {
+    display: none;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+    font-size: 0.9em;
+    color: #555;
+}
+</style>
+
+<script>
+// 기존 스크립트 충돌 방지를 위해 IIFE 사용
+(function(){
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => {
+            const meaning = card.querySelector('.meaning');
+            meaning.style.display = meaning.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+})();
   </script>
 </body>
 </html>
