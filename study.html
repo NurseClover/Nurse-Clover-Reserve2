@@ -1,136 +1,130 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>…</head>
+<head>
+  <meta charset="UTF-8">
+  <title>의학용어 학습 자료</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      padding: 30px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #tabs {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #tabs button {
+      padding: 8px 16px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #ddd;
+      cursor: pointer;
+    }
+
+    #tabs button.active {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    #termsContainer {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .term {
+      background-color: white;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .term:hover {
+      transform: translateY(-3px);
+    }
+
+    .meaning {
+      display: none;
+      padding-top: 8px;
+      margin-top: 8px;
+      border-top: 1px solid #eee;
+      font-size: 0.9em;
+      color: #555;
+    }
+  </style>
+</head>
 <body>
   <h1>의학용어 학습 자료</h1>
+
   <div id="tabs"></div>
   <div id="termsContainer"></div>
 
-  <script type="module">
-    async function loadTerms() {
-      const res = await fetch('/medical_terms.json');
-      if (!res.ok) throw new Error('의학용어 JSON을 불러올 수 없습니다');
-      return await res.json();
-    }
+  <script>
+    const medicalTerms = [
+      { chapter: "호흡기계", word: "Lung : 폐", meaning: "산소와 이산화탄소 교환이 이루어지는 기관." },
+      { chapter: "호흡기계", word: "Trachea : 기관", meaning: "후두와 기관지를 연결하는 공기의 통로." },
+      { chapter: "순환기계", word: "Heart : 심장", meaning: "혈액을 전신에 공급하는 펌프 역할의 기관." },
+      { chapter: "순환기계", word: "Aorta : 대동맥", meaning: "심장에서 나온 혈액을 전신으로 보내는 가장 큰 동맥." }
+      // 여기에 계속해서 추가 가능
+    ];
 
-    function renderTabs(terms) {
-      const chapters = ['전체', ...new Set(terms.map(t => t.chapter)).values()];
+    function renderTabs() {
+      const chapters = ['전체', ...new Set(medicalTerms.map(t => t.chapter))];
       const tabs = document.getElementById('tabs');
       tabs.innerHTML = '';
-      chapters.forEach(ch => {
+      chapters.forEach(chapter => {
         const btn = document.createElement('button');
-        btn.textContent = ch;
-        btn.dataset.chapter = ch;
-        btn.onclick = () => selectTab(ch, btn);
+        btn.textContent = chapter;
+        btn.onclick = () => selectChapter(chapter, btn);
         tabs.append(btn);
       });
-      // 기본 탭 활성화
-      tabs.querySelector('button').click();
+      tabs.querySelector('button').click();  // 첫 번째 탭 자동 선택
     }
 
-    function selectTab(chapter, btn) {
-      // 탭 UI 업데이트
+    function selectChapter(chapter, btn) {
       document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      // 단어 필터링 & 렌더
+
       const filtered = chapter === '전체'
-        ? window._allTerms
-        : window._allTerms.filter(t => t.chapter === chapter);
-      renderTermsList(filtered);
+        ? medicalTerms
+        : medicalTerms.filter(t => t.chapter === chapter);
+      
+      renderTerms(filtered);
     }
 
-    function renderTermsList(terms) {
+    function renderTerms(terms) {
       const container = document.getElementById('termsContainer');
-      container.innerHTML = terms.length
-        ? terms.map(t => `<div class="term"><strong>${t.word}</strong>  ${t.meaning}</div>`).join('')
-        : '해당 챕터에 단어가 없습니다.';
+      container.innerHTML = '';
+      terms.forEach(term => {
+        const div = document.createElement('div');
+        div.className = 'term';
+        div.innerHTML = `
+          <strong>${term.word}</strong>
+          <div class="meaning">${term.meaning}</div>
+        `;
+        div.onclick = () => {
+          const meaningDiv = div.querySelector('.meaning');
+          meaningDiv.style.display = meaningDiv.style.display === 'block' ? 'none' : 'block';
+        };
+        container.append(div);
+      });
+
+      if (terms.length === 0) container.textContent = '해당 챕터에 단어가 없습니다.';
     }
 
     // 초기화
-    (async () => {
-      window._allTerms = await loadTerms();
-      renderTabs(window._allTerms);
-    })();
-  <!-- 기존 study.html 파일의 <body> 내부 맨 아래쪽에 추가하세요 -->
-<div class="chapter-container">
-
-    <!-- 예시 챕터 -->
-    <div class="chapter">
-        <h2>호흡기계</h2>
-        <div class="cards">
-            <div class="card">
-                <div class="term">Lung : 폐</div>
-                <div class="meaning">산소와 이산화탄소 교환이 이루어지는 기관.</div>
-            </div>
-            <div class="card">
-                <div class="term">Trachea : 기관</div>
-                <div class="meaning">후두와 기관지를 연결하는 공기의 통로.</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 추가 챕터는 이런 방식으로 계속 추가 -->
-</div>
-
-<style>
-/* 기존 style이 있다면 그 아래에 추가 */
-.chapter-container {
-    max-width: 800px;
-    margin: auto;
-}
-
-.chapter {
-    margin-bottom: 25px;
-}
-
-.chapter h2 {
-    background-color: #4CAF50;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 8px;
-}
-
-.cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.card {
-    background-color: white;
-    border-radius: 8px;
-    padding: 12px;
-    width: 180px;
-    box-shadow: 0 3px 5px rgba(0,0,0,0.15);
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-3px);
-}
-
-.meaning {
-    display: none;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid #eee;
-    font-size: 0.9em;
-    color: #555;
-}
-</style>
-
-<script>
-// 기존 스크립트 충돌 방지를 위해 IIFE 사용
-(function(){
-    document.querySelectorAll('.card').forEach(card => {
-        card.addEventListener('click', () => {
-            const meaning = card.querySelector('.meaning');
-            meaning.style.display = meaning.style.display === 'block' ? 'none' : 'block';
-        });
-    });
-})();
+    renderTabs();
   </script>
 </body>
 </html>
