@@ -1,259 +1,99 @@
 <!DOCTYPE html>
 <html lang="ko">
- <head>
-  <meta charset="utf-8"/>
-  <title>
-   영어-한글 짝맞추기 게임
-  </title>
+<head>
+  <meta charset="UTF-8">
+  <title>챕터 카드로 단어 보기</title>
   <style>
-   body { font-family: sans-serif; text-align: center; padding: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fefefe;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      max-width: 800px;
-      margin: 20px auto;
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      max-width: 900px;
+      margin: auto;
     }
     .card {
-      background: #f0f0f0;
+      background-color: #f0f8ff;
       padding: 20px;
       border-radius: 10px;
       cursor: pointer;
-      font-size: 14px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      transition: background 0.3s;
-      user-select: none;
+      transition: transform 0.2s;
     }
-    .card.revealed { background: #d1eaff; }
-    .card.matched { background: #b0f0b0; cursor: default; }
-  </style>
- </head>
- <body>
-<script>
-  // 테마 적용
-  const theme = localStorage.getItem("theme") || "pink";
-  document.documentElement.style.setProperty('--main-bg', theme === "sky" ? "#d0f0ff" : "#ffe4f0");
-
-  // 배경음 적용
-  const bgm = localStorage.getItem("bgm");
-  if (bgm && bgm !== "none") {
-    const audio = document.createElement("audio");
-    audio.src = bgm;
-    audio.autoplay = true;
-    audio.loop = true;
-    audio.volume = 0.4;
-    document.body.appendChild(audio);
-  }
-
-  // 챕터 불러오기
-  const chapter = localStorage.getItem("chapter") || "전체";
-</script>
-
-  <h1>
-   📘 영어-한글 짝맞추기 게임
-  </h1>
-  <p>
-   ⏱️
-   <span id="timer">
-    0
-   </span>
-   초 | 점수:
-   <span id="score">
-    0
-   </span>
-  </p>
-  <label for="chapterSelect">
-   챕터 선택:
-  </label>
-  <select id="chapterSelect">
-   <option value="진료부서">
-    진료부서
-   </option>
-   <option value="간호기록">
-    간호기록
-   </option>
-   <option value="기본용어">
-    기본용어
-   </option>
-    <option value="진료부서">
-    사랑
-   </option>
-  </select>
-  <button onclick="startGame()">
-   게임 시작
-  </button>
-  <div class="grid" id="game">
-  </div>
-  <p id="status" style="color: green; font-weight: bold;">
-  </p>
-  <script>
-   const allData = {"진료부서": [["OPD (outpatient department)", "외래"], ["IPD (inpatient department)", "입원"], ["MED / IM (internal medicine)", "내과"]], "간호기록": [["before / ante", "이전"], ["after / post", "이후"], ["blood pressure", "혈압"]], "기본용어": [["patient", "환자"], ["hospital", "병원"], ["treatment", "치료"]]};
-let cards = [], firstCard = null, secondCard = null;
-let matchedCount = 0, canClick = false, score = 0, timer = 0, timerInterval = null;
-
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-function resetGameUI() {
-  document.getElementById("score").innerText = "0";
-  document.getElementById("timer").innerText = "0";
-  document.getElementById("status").innerText = "";
-  const gameBoard = document.getElementById("game");
-  if (gameBoard) gameBoard.innerHTML = "";
-}
-
-function startGame() {
-  clearInterval(timerInterval);
-  resetGameUI();
-  const chapter = document.getElementById("chapterSelect").value;
-  const pairs = allData[chapter];
-  if (!pairs || pairs.length < 1) {
-    document.getElementById("status").innerText = "❗ 단어가 없습니다.";
-    return;
-  }
-  matchedCount = 0; score = 0; timer = 0;
-  firstCard = null; secondCard = null; canClick = false;
-
-  cards = [];
-  pairs.forEach(([eng, kor]) => {
-    cards.push({ type: "ENG", value: eng, matched: false });
-    cards.push({ type: "KOR", value: kor, matched: false });
-  });
-  shuffle(cards);
-
-  const gameBoard = document.getElementById("game");
-  cards.forEach((card, index) => {
-    const div = document.createElement("div");
-    div.classList.add("card", "revealed");
-    div.dataset.index = index;
-    div.innerText = card.value;
-    div.onclick = () => flipCard(index);
-    gameBoard.appendChild(div);
-  });
-
-  setTimeout(() => {
-    document.querySelectorAll(".card").forEach(cardEl => {
-      if (!cardEl.classList.contains("matched")) {
-        cardEl.classList.remove("revealed");
-        cardEl.innerText = "?";
-      }
-    });
-    canClick = true;
-  }, 2000);
-
-  timerInterval = setInterval(() => {
-    timer++;
-    document.getElementById("timer").innerText = timer;
-  }, 1000);
-}
-
-function flipCard(index) {
-  if (!canClick) return;
-  const cardEl = document.querySelectorAll(".card")[index];
-  const card = cards[index];
-  if (!card || card.matched || cardEl.classList.contains("revealed")) return;
-
-  cardEl.classList.add("revealed");
-  cardEl.innerText = card.value;
-
-  if (!firstCard) {
-    firstCard = { index, card };
-  } else {
-    secondCard = { index, card };
-    canClick = false;
-
-    if (isMatch(firstCard.card, secondCard.card)) {
-      setTimeout(() => {
-        cardEl.classList.add("matched");
-        document.querySelectorAll(".card")[firstCard.index].classList.add("matched");
-        cards[firstCard.index].matched = true;
-        cards[secondCard.index].matched = true;
-        matchedCount++; score += 10;
-        document.getElementById("score").innerText = score;
-
-        if (matchedCount === cards.length / 2) {
-          clearInterval(timerInterval);
-          document.getElementById("status").innerText = `🎉 성공! 점수: ${score}, 시간: ${timer}초`;
-        }
-        resetFlip();
-      }, 400);
-    } else {
-      setTimeout(() => {
-        cardEl.classList.remove("revealed");
-        cardEl.innerText = "?";
-        const firstEl = document.querySelectorAll(".card")[firstCard.index];
-        firstEl.classList.remove("revealed");
-        firstEl.innerText = "?";
-        resetFlip();
-      }, 800);
+    .card:hover {
+      transform: scale(1.03);
     }
-  }
-}
-
-function resetFlip() {
-  firstCard = null;
-  secondCard = null;
-  canClick = true;
-}
-
-function isMatch(card1, card2) {
-  const chapter = document.getElementById("chapterSelect").value;
-  const pairs = allData[chapter] || [];
-  return pairs.some(([eng, kor]) =>
-    (card1.type === "ENG" && card2.type === "KOR" && card1.value === eng && card2.value === kor) ||
-    (card2.type === "ENG" && card1.type === "KOR" && card2.value === eng && card1.value === kor)
-  );
-}
-  </script>
-  <style>
-   :root {
-    --main-bg: #fceeee;
-    --card-color: #d0f0ff;
-  }
-  body {
-    background-color: var(--main-bg);
-  }
-  .settings {
-    margin-top: 20px;
-    text-align: center;
-  }
+    .back-button {
+      margin-top: 30px;
+      display: inline-block;
+      padding: 10px 20px;
+      background: #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
-  <div class="settings">
-   <label for="themeSelect">
-    배경 테마 선택:
-   </label>
-   <select id="themeSelect" onchange="applyThemeToAll()">
-    <option value="pink">
-     핑크
-    </option>
-    <option value="sky">
-     하늘
-    </option>
-   </select>
-  </div>
+</head>
+<body>
+  <h1>📘 챕터별 의학용어 보기</h1>
+  <div id="app"></div>
+
   <script>
-   function applyThemeToAll() {
-  const theme = document.getElementById("themeSelect").value;
-  localStorage.setItem("theme", theme);
-  const root = document.documentElement;
-  if (theme === "sky") {
-    root.style.setProperty('--main-bg', '#d0f0ff');
-    root.style.setProperty('--card-color', 'white');
-  } else {
-    root.style.setProperty('--main-bg', '#ffe4f0');
-    root.style.setProperty('--card-color', '#d0f0ff');
-  }
-}
-window.onload = () => {
-  const saved = localStorage.getItem("theme") || "pink";
-  document.getElementById("themeSelect").value = saved;
-  applyThemeToAll();
-}
+    const data = {
+      "진료부서": [
+        { eng: "OPD (outpatient department)", kor: "외래", desc: "외래 진료를 받는 부서" },
+        { eng: "IPD (inpatient department)", kor: "입원", desc: "입원 환자 관리 부서" }
+      ],
+      "간호기록": [
+        { eng: "before / ante", kor: "이전", desc: "어떤 시점보다 이전을 의미" },
+        { eng: "blood pressure", kor: "혈압", desc: "혈관 내 압력" }
+      ],
+      "기본용어": [
+        { eng: "patient", kor: "환자", desc: "치료를 받는 사람" },
+        { eng: "treatment", kor: "치료", desc: "병을 낫게 하는 행위" }
+      ]
+    };
+
+    const app = document.getElementById("app");
+
+    function showChapters() {
+      app.innerHTML = '<div class="grid">' + 
+        Object.keys(data).map(ch => `
+          <div class="card" onclick="showWords('${ch}')">${ch}</div>
+        `).join('') +
+      '</div>';
+    }
+
+    function showWords(chapter) {
+      const words = data[chapter];
+      app.innerHTML = `
+        <h2>📂 ${chapter}</h2>
+        <div class="grid">
+          ${words.map(w => `
+            <div class="card" onclick="toggleMeaning(this)">
+              <div><strong>${w.eng}</strong></div>
+              <div>${w.kor}</div>
+              <div class="meaning" style="display:none; margin-top:10px; font-size:0.9em; color:#555;">${w.desc}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="back-button" onclick="showChapters()">🔙 챕터로 돌아가기</div>
+      `;
+    }
+
+    function toggleMeaning(cardEl) {
+      const meaning = cardEl.querySelector('.meaning');
+      meaning.style.display = meaning.style.display === 'block' ? 'none' : 'block';
+    }
+
+    showChapters(); // 초기 화면
   </script>
- </body>
+</body>
 </html>
