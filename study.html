@@ -11,16 +11,8 @@
       --accent-color: #4CAF50;
     }
 
-    <body>
+    body
             <a href="index.html" class="home-button">🏠 홈으로 가기</a>
-    {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--font-color);
-      padding: 20px;
-      text-align: center;
-      transition: background-color 0.3s, color 0.3s;
-    }
     {
       font-family: 'Segoe UI', sans-serif;
       background-color: var(--bg-color);
@@ -79,9 +71,33 @@
     }
         h1 {
 }
+   .home-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ffd3e0;
+  color: #333;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.home-button:hover {
+  background-color: #ff99bb;
+}
+ 
   </style>
 </head>
 <body>
+        <a href="index.html" class="home-button">🏠 홈으로 가기</a>
+    {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--font-color);
+      padding: 20px;
+      text-align: center;
+      transition: background-color 0.3s, color 0.3s;
+    }
 
   <div class="theme-selector">
     <label for="themeSelect">🎨 테마 선택:</label>
