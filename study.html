@@ -1,120 +1,182 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>의학용어 학습 자료</title>
+  <meta charset="UTF-8" />
+  <title>의학용어 챕터 카드 보기</title>
   <style>
+    :root {
+      --bg-color: #fffafc;
+      --card-bg: #e6f3ff;
+      --font-color: #222;
+      --accent-color: #4CAF50;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      padding: 30px;
-      color: #333;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--font-color);
+      padding: 20px;
+      text-align: center;
+      transition: background-color 0.3s, color 0.3s;
     }
+
     h1 {
-      text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
+      font-size: 28px;
     }
-    #tabs {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    #tabs button {
-      padding: 8px 16px;
-      margin: 5px;
-      border: none;
-      border-radius: 5px;
-      background-color: #ddd;
-      cursor: pointer;
-    }
-    #tabs button.active {
-      background-color: #4CAF50;
-      color: white;
-    }
-    #termsContainer {
-      max-width: 800px;
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      max-width: 900px;
       margin: auto;
     }
-    .term {
-      background-color: white;
-      padding: 10px 15px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    .card {
+      background-color: var(--card-bg);
+      padding: 20px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, background-color 0.3s;
     }
-    .term:hover {
-      transform: translateY(-3px);
+
+    .card:hover {
+      transform: scale(1.03);
     }
+
+    .back-button {
+      margin-top: 30px;
+      display: inline-block;
+      padding: 10px 20px;
+      background: #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
     .meaning {
       display: none;
-      padding-top: 8px;
-      margin-top: 8px;
-      border-top: 1px solid #eee;
+      margin-top: 10px;
       font-size: 0.9em;
       color: #555;
+      border-top: 1px solid #ccc;
+      padding-top: 8px;
+    }
+
+    .theme-selector {
+      margin: 20px 0;
     }
   </style>
 </head>
 <body>
-  <h1>의학용어 학습 자료</h1>
-  <div id="tabs"></div>
-  <div id="termsContainer"></div>
+
+  <h1>📘 챕터별 의학용어 보기</h1>
+
+  <div class="theme-selector">
+    <label for="themeSelect">🎨 테마 선택:</label>
+    <select id="themeSelect" onchange="applyTheme(this.value)">
+      <option value="default">기본 (연분홍)</option>
+      <option value="sky">하늘</option>
+      <option value="dark">다크</option>
+    </select>
+  </div>
+
+  <div id="app"></div>
 
   <script>
-    const medicalTerms = [
-      { chapter: "호흡기계", word: "Lung : 폐", meaning: "산소와 이산화탄소 교환이 이루어지는 기관." },
-      { chapter: "호흡기계", word: "Trachea : 기관", meaning: "후두와 기관지를 연결하는 공기의 통로." },
-      { chapter: "호흡기계", word: "Bronchus : 기관지", meaning: "기관과 폐포를 연결하는 공기의 통로." },
-      { chapter: "호흡기계", word: "Alveolus : 폐포", meaning: "가스 교환이 일어나는 폐 내부 작은 공기 주머니." },
-
-      { chapter: "순환기계", word: "Heart : 심장", meaning: "혈액을 전신에 공급하는 펌프 역할의 기관." },
-      { chapter: "순환기계", word: "Aorta : 대동맥", meaning: "심장에서 나온 혈액을 전신으로 보내는 가장 큰 동맥." },
-      { chapter: "순환기계", word: "Vein : 정맥", meaning: "혈액을 심장으로 되돌려 보내는 혈관." }
+    // 데이터
+    const chapterData = [
+      {
+        name: "진료부서",
+        words: [
+          { eng: "OPD (outpatient department)", kor: "외래", desc: "외래 진료 부서" },
+          { eng: "IPD (inpatient department)", kor: "입원", desc: "입원 환자 부서" },
+          { eng: "ER (emergency room)", kor: "응급실", desc: "응급 환자 대응 부서" }
+        ]
+      },
+      {
+        name: "간호기록",
+        words: [
+          { eng: "before / ante", kor: "이전", desc: "어떤 시점보다 앞" },
+          { eng: "after / post", kor: "이후", desc: "어떤 시점 이후" },
+          { eng: "blood pressure", kor: "혈압", desc: "혈액이 혈관을 누르는 압력" }
+        ]
+      },
+      {
+        name: "기본용어",
+        words: [
+          { eng: "patient", kor: "환자", desc: "치료를 받는 사람" },
+          { eng: "treatment", kor: "치료", desc: "병을 고치는 행위" },
+          { eng: "hospital", kor: "병원", desc: "환자를 치료하는 시설" }
+        ]
+      }
     ];
 
-    function renderTabs() {
-      const chapters = ['전체', ...new Set(medicalTerms.map(t => t.chapter))];
-      const tabs = document.getElementById('tabs');
-      tabs.innerHTML = '';
-      chapters.forEach(chapter => {
-        const btn = document.createElement('button');
-        btn.textContent = chapter;
-        btn.onclick = () => selectChapter(chapter, btn);
-        tabs.append(btn);
-      });
-      tabs.querySelector('button').click();
+    const app = document.getElementById("app");
+
+    function showChapters() {
+      app.innerHTML = `
+        <div class="grid">
+          ${chapterData.map(ch => `
+            <div class="card" onclick="showWords('${ch.name}')">${ch.name}</div>
+          `).join('')}
+        </div>
+      `;
     }
 
-    function selectChapter(chapter, btn) {
-      document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filtered = chapter === '전체'
-        ? medicalTerms
-        : medicalTerms.filter(t => t.chapter === chapter);
-      renderTerms(filtered);
+    function showWords(chapterName) {
+      const chapter = chapterData.find(c => c.name === chapterName);
+      if (!chapter) return;
+
+      app.innerHTML = `
+        <h2>📂 ${chapter.name}</h2>
+        <div class="grid">
+          ${chapter.words.map(w => `
+            <div class="card" onclick="toggleMeaning(this)">
+              <div><strong>${w.eng}</strong></div>
+              <div>${w.kor}</div>
+              <div class="meaning">${w.desc}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="back-button" onclick="showChapters()">🔙 챕터로 돌아가기</div>
+      `;
     }
 
-    function renderTerms(terms) {
-      const container = document.getElementById('termsContainer');
-      container.innerHTML = '';
-      terms.forEach(term => {
-        const div = document.createElement('div');
-        div.className = 'term';
-        div.innerHTML = `
-          <strong>${term.word}</strong>
-          <div class="meaning">${term.meaning}</div>
-        `;
-        div.onclick = () => {
-          const meaningDiv = div.querySelector('.meaning');
-          meaningDiv.style.display = meaningDiv.style.display === 'block' ? 'none' : 'block';
-        };
-        container.append(div);
-      });
-      if (terms.length === 0) container.textContent = '해당 챕터에 단어가 없습니다.';
+    function toggleMeaning(cardEl) {
+      const m = cardEl.querySelector('.meaning');
+      m.style.display = m.style.display === 'block' ? 'none' : 'block';
     }
 
-    renderTabs();
+    // 테마 설정
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      localStorage.setItem('selectedTheme', theme);
+
+      if (theme === 'sky') {
+        root.style.setProperty('--bg-color', '#e0f7ff');
+        root.style.setProperty('--card-bg', '#ffffff');
+        root.style.setProperty('--font-color', '#003344');
+      } else if (theme === 'dark') {
+        root.style.setProperty('--bg-color', '#1e1e1e');
+        root.style.setProperty('--card-bg', '#2e2e2e');
+        root.style.setProperty('--font-color', '#eeeeee');
+      } else {
+        root.style.setProperty('--bg-color', '#fffafc');
+        root.style.setProperty('--card-bg', '#e6f3ff');
+        root.style.setProperty('--font-color', '#222');
+      }
+    }
+
+    // 초기 로딩 시 테마 복원
+    window.onload = () => {
+      const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+      document.getElementById('themeSelect').value = savedTheme;
+      applyTheme(savedTheme);
+      showChapters();
+    };
   </script>
+
 </body>
 </html>
