@@ -1,40 +1,56 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>단어 학습</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
+<head>…</head>
 <body>
-  <h1>단어 학습</h1>
-  <label for="chapterSelect">챕터 선택:</label>
-  <select id="chapterSelect"></select>
-  <div id="termList" class="term-list"></div>
+  <h1>의학용어 학습 자료</h1>
+  <div id="tabs"></div>
+  <div id="termsContainer"></div>
 
   <script type="module">
-    import { getChapters, getTermsByChapter } from './terms.js';
-
-    const chapterSelect = document.getElementById('chapterSelect');
-    const termList = document.getElementById('termList');
-
-    async function init() {
-      const chapters = await getChapters();
-      chapterSelect.innerHTML = chapters
-        .map(ch => `<option value="${ch}">${ch}</option>`)
-        .join('');
-      chapterSelect.addEventListener('change', renderTerms);
-      renderTerms();
+    async function loadTerms() {
+      const res = await fetch('/medical_terms.json');
+      if (!res.ok) throw new Error('의학용어 JSON을 불러올 수 없습니다');
+      return await res.json();
     }
 
-    async function renderTerms() {
-      const chapter = chapterSelect.value;
-      const terms = await getTermsByChapter(chapter);
-      termList.innerHTML = terms
-        .map(t => `<div class="term"><strong>${t.word}</strong>: ${t.meaning}</div>`)
-        .join('');
+    function renderTabs(terms) {
+      const chapters = ['전체', ...new Set(terms.map(t => t.chapter)).values()];
+      const tabs = document.getElementById('tabs');
+      tabs.innerHTML = '';
+      chapters.forEach(ch => {
+        const btn = document.createElement('button');
+        btn.textContent = ch;
+        btn.dataset.chapter = ch;
+        btn.onclick = () => selectTab(ch, btn);
+        tabs.append(btn);
+      });
+      // 기본 탭 활성화
+      tabs.querySelector('button').click();
     }
 
-    init();
+    function selectTab(chapter, btn) {
+      // 탭 UI 업데이트
+      document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // 단어 필터링 & 렌더
+      const filtered = chapter === '전체'
+        ? window._allTerms
+        : window._allTerms.filter(t => t.chapter === chapter);
+      renderTermsList(filtered);
+    }
+
+    function renderTermsList(terms) {
+      const container = document.getElementById('termsContainer');
+      container.innerHTML = terms.length
+        ? terms.map(t => `<div class="term"><strong>${t.word}</strong>  ${t.meaning}</div>`).join('')
+        : '해당 챕터에 단어가 없습니다.';
+    }
+
+    // 초기화
+    (async () => {
+      window._allTerms = await loadTerms();
+      renderTabs(window._allTerms);
+    })();
   </script>
 </body>
 </html>
